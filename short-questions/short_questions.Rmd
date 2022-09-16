@@ -21,6 +21,7 @@ These questions are taken from Question 12 of chapter 3 of the textbook(Bilder a
 
 ```{r read cereal data, message=FALSE}
 cereal <- read_csv('../data/short-questions/cereal_dillons.csv')
+head(cereal) #TODO
 ```
 
 
@@ -28,27 +29,70 @@ cereal <- read_csv('../data/short-questions/cereal_dillons.csv')
 (1 point) The explanatory variables need to be reformatted before proceeding further (sample code is provided in the textbook). First, divide each explanatory variable by its serving size to account for the different serving sizes among the cereals. Second, rescale each variable to be within 0 and 1. Construct side-by-side box plots with dot plots overlaid for each of the explanatory variables. Also, construct a parallel coordinates plot for the explanatory variables and the shelf number. Discuss whether possible content differences exist among the shelves.
 
 ```{r recode data}
-
+# Rescaling each variable to be within 0 and 1
+stand01 <- function (x) { (x - min(x))/( max(x) - min(x)) }
+cereal2<-data.frame(Shelf=cereal$Shelf, sugar=stand01(x=cereal$sugar_g/cereal$size_g),
+                      fat = stand01 (x = cereal$fat_g / cereal$size_g),
+                      sodium = stand01 (x = cereal$sodium_mg / cereal$size_g))
+head(cereal2)
 ```
 
 ```{r boxplots}
+# Constructing side-by-side box plots with dot plots overlaid
+boxplot(formula=sugar ~ Shelf, data=cereal2, ylab="Sugar",
+        xlab="Shelf", pars=list(outpch =NA))
+stripchart(x=cereal2$sugar ~ cereal2$Shelf, lwd=2, col="red",
+           method="jitter", vertical=TRUE ,pch=1, add=TRUE)
 
+boxplot(formula=fat ~ Shelf, data=cereal2, ylab="Fat",
+        xlab="Shelf", pars=list(outpch =NA))
+stripchart(x=cereal2$fat ~ cereal2$Shelf, lwd=2, col="red",
+           method="jitter", vertical=TRUE, pch=1, add=TRUE)
+
+boxplot(formula=sodium ~ Shelf, data=cereal2, ylab="Sodium",
+        xlab="Shelf", pars=list(outpch =NA))
+stripchart(x=cereal2$sodium ~ cereal2$Shelf, lwd=2, col="red",
+           method="jitter", vertical=TRUE, pch=1, add=TRUE)
 ```
 
 > 'Fill in: What do you observe in these boxplots?'
 
 ```{r parallel coordiantes plot}
+# Constructing a parallel coordinates plot
+library(package = MASS)
 
+# Colors by condition:
+cereal2.colors <- ifelse(test = cereal2$Shelf==1, yes = "black",
+  no = ifelse(test = cereal2$Shelf==2, yes = "red",
+  no = ifelse(test = cereal2$Shelf==3, yes = "green", no = "blue")))
+# Line type by condition:
+cereal2.lty<-ifelse(test = cereal2$Shelf==1, yes = "solid",
+  no = ifelse(test = cereal2$Shelf==2, yes = "longdash",
+  no = ifelse(test = cereal2$Shelf==3, yes = "dotdash", no = "dotted")))
+# Plot
+parcoord(x = cereal2[,2:4], col = cereal2.colors, lty = cereal2.lty)
+legend(x = 2.6, y = 1.05, legend = c("1", "2", "3", "4"),
+       lty = c("solid", "longdash", "dotdash", "dotted"),
+  col=c("black", "red", "green", "blue"), cex=0.8, bty="n")
 ```
 
-> 'Fill in: What do you observe in these parallel coordinates plots?' 
-
+> 'Fill in: What do you observe in these parallel coordinates plots?'  
+>
 > Fill in: Do content differences exist between the shelves?'
+>
+> 'Majority of the food items tend to have a "V" shape with high suger, low-to-medium fat and high sodium.'  
+> 'Low-to-medium sugar cereals generally available on shelf 1, 3 & 4 and high sugar cereals on shelf 2. High fat cereals generally available on self 1, 3 & 4 and low fat on shelf 2 & 3. Low sodium cereals are generally available on slef 2, 3 & 4 and high sodium on shelf 1'
+>
+> 'Shelf 1 tend to have low fat and high sodium. Shelf 2 tend to have high sugar, high-to-medium fat and medium sodium. Shelf 3 tend to have all types of cereals. Sheld 4 tend to have medium sugar, low-to-medium fat and medium sodium cereals.'
+> 
+
 
 ## Evaluate Ordinal vs. Categorical 
 (1 point) The response has values of $1, 2, 3,$ and $4$. Explain under what setting would it be desirable to take into account ordinality, and whether you think that this setting occurs here. Then estimate a suitable multinomial regression model with linear forms of the sugar, fat, and sodium variables. Perform LRTs to examine the importance of each explanatory variable. Show that there are no significant interactions among the explanatory variables (including an interaction among all three variables).
 
-> Fill in: What do you think about ordinal data?' 
+> Fill in: What do you think about ordinal data?'  
+>
+> ''
 
 ```{r multinomial logit regressions}
 model_cereal_shelves_linear    <- 'fill this in'
