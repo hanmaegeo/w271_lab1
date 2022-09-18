@@ -1,11 +1,23 @@
 ---
 title: "W271 Group Lab 1"
 subtitle: "Investigating the 1986 Space Shuttle Challenger Accident"
-author: "Please fill in with your names."
+author: "Nathan Martinez, Meera Sharma, Hannah George, and Haile Bizunehe"
 output: bookdown::pdf_document2
 fontsize: 11pt
 geometry: margin=1in
 ---
+
+```{r load packages, message=FALSE, warning=FALSE, echo=FALSE}
+list.of.packages <- c("tidyverse", "sandwich", "lmtest", "car", "MASS")
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+if(length(new.packages)) install.packages(new.packages)
+
+library(tidyverse)
+library(sandwich)
+library(lmtest)
+library(car)
+library(MASS)
+```
 
 \newpage
 
@@ -29,6 +41,42 @@ This report will, indeed, be abstract. No, instead, describe your goals your app
 
 -   This EDA should begin with an inspection of the given dataset; examination of anomalies, missing values, potential of top and/or bottom code etc.
 
+```{r}
+df <- read_csv('../data/raw/challenger.csv')
+```
+```{r}
+summary(df)
+```
+```{r}
+ggplot(df, aes(x = Temp, y = O.ring)) + 
+  geom_point() + 
+  labs(title = "Number of O-Ring Failures by Temperature") +
+  ylab("Number of O-Ring Failures") +
+  xlab("Temperature")
+```
+```{r}
+ggplot(df, aes(x = Pressure, y = O.ring)) + 
+  geom_point() + 
+  labs(title = "Number of O-Ring Failures by Pressure") +
+  ylab("Number of O-Ring Failures") +
+  xlab("Pressure")
+```
+```{r}
+ggplot(df, aes(x = O.ring, y = Temp, group = O.ring)) + 
+  geom_boxplot() +
+  labs(title = "Boxplot of O-Ring Failures by Temperature") +
+  ylab("Temperature") +
+  xlab("Number of O-Ring Failures")
+```
+```{r}
+ggplot(df, aes(x = O.ring, y = Pressure, group = O.ring)) + 
+  geom_boxplot() +
+  labs(title = "Boxplot of O-Ring Failures by Pressure") +
+  ylab("Pressure") +
+  xlab("Number of O-Ring Failures")
+```
+
+
 ## Description
 
 **Complete the following task. In your final submission, please remove this question prompt so that your report reads as a report.**
@@ -47,6 +95,19 @@ This report will, indeed, be abstract. No, instead, describe your goals your app
 **Your analysis should address the following two questions. In your final submission, please remove this question prompt so that your report reads as a report.**
 
 1.  Estimate the logistic regression model that the authors present in their report -- include the variables as linear terms in the model. Evaluate, using likelihood ratio tests, the statistical significance of each explanatory variable in the model. Evaluate, using the context and data understanding that you have created in the **Data** section of this report, the practical significance of each explanatory variable in the model.
+
+```{r}
+# Create a new Temperature - Mean(Temperature) Column
+df$t_minus_t_bar <- df$Temp - mean(df$Temp)
+df$O_ring_order <- factor(df$O.ring)
+
+model <- polr(formula = O_ring_order ~ Temp + Pressure, data = df, method = 'logistic')
+
+# glm(formula = O.ring ~ t_minus_t_bar + I(t_minus_t_bar^2), data = df, family = 'poisson')
+
+Anova(model, test = 'LR')
+```
+
 
 2.  Dalal, Fowlkes, and Hoadley (1989) chose to remove `pressure` from the model based on their likelihood ratio tests. Critically evaluate, using your test results and understanding of the question and data, whether `pressure` should be included in the model, or instead, `pressure` should not be included in the model. Your report needs to make a determination, argue why it is most appropriate choice, and make note of how (if at all) the model results are affected by the choice of including or excluding `pressure`.
 
