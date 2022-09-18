@@ -159,27 +159,39 @@ aj_shelf_probs
 ```{r create figure 3.3}
 # Get the mean and re-scale each variable to be within 0 and 1
 fat    <- (mean(fat_all) - min(fat_all)) / (max(fat_all) - min(fat_all))
-sodium <- (mean(sodium_all) - min(sodium_all)) / (max(sodium_all) - min(sodium_all))
+sodium <- (mean(sodium_all)-min(sodium_all))/(max(sodium_all)-min(sodium_all))
 
 # Plotting sugar only model
-curve(expr = predict(object = model_cereal_shelves_linear, newdata = data.frame(sugar = x, fat = fat, sodium = sodium), type = "probs")[,1],
-   ylab = expression(hat(pi)), xlab = "Sugar", type = "n",
-  xlim = c(min(cereal2$sugar), max(cereal2$sugar)), col = "black", lty = "solid", lwd = 2, n = 1000,
-  panel.first = grid(col = "gray", lty = "dotted"))
-curve(expr = predict(object = model_cereal_shelves_linear, newdata = data.frame(sugar = x, fat = fat, sodium = sodium), type = "probs")[,4],
+curve(expr = predict(object = model_cereal_shelves_linear,
+    newdata = data.frame(sugar=x, fat=fat, sodium=sodium), type = "probs")[,1],
+    ylab = expression(hat(pi)), xlab = "Sugar", type = "n",
+    xlim = c(min(cereal2$sugar), max(cereal2$sugar)),
+    col = "black", lty = "solid", lwd = 2, n = 1000,
+    panel.first = grid(col = "gray", lty = "dotted"))
+curve(expr = predict(object = model_cereal_shelves_linear,
+  newdata = data.frame(sugar=x, fat=fat, sodium=sodium), type = "probs")[,4],
   col = "blue", lty = "dotted", lwd = 2, n = 1000, add = TRUE,
-  xlim = c(min(cereal2$sugar[cereal2$Shelf.order == 4]), max(cereal2$sugar[cereal2$Shelf.order == 4])))  # Shelf 4
-curve(expr = predict(object = model_cereal_shelves_linear, newdata = data.frame(sugar = x, fat = fat, sodium = sodium), type = "probs")[,3],
+  xlim = c(min(cereal2$sugar[cereal2$Shelf.order == 4]),
+           max(cereal2$sugar[cereal2$Shelf.order == 4])))  # Shelf 4
+curve(expr = predict(object = model_cereal_shelves_linear, 
+  newdata = data.frame(sugar=x, fat=fat, sodium=sodium), type = "probs")[,3],
   col = "green", lty = "dotdash", lwd = 2, n = 1000, add = TRUE,
-  xlim = c(min(cereal2$sugar[cereal2$Shelf.order == 3]), max(cereal2$sugar[cereal2$Shelf.order == 3])))  # Shelf 3
-curve(expr = predict(object = model_cereal_shelves_linear, newdata = data.frame(sugar = x, fat = fat, sodium = sodium), type = "probs")[,2],
+  xlim = c(min(cereal2$sugar[cereal2$Shelf.order == 3]),
+           max(cereal2$sugar[cereal2$Shelf.order == 3])))  # Shelf 3
+curve(expr = predict(object = model_cereal_shelves_linear,
+  newdata = data.frame(sugar=x, fat=fat, sodium=sodium), type = "probs")[,2],
   col = "red", lty = "longdash", lwd = 2, n = 1000, add = TRUE,
-  xlim = c(min(cereal2$sugar[cereal2$Shelf.order == 2]), max(cereal2$sugar[cereal2$Shelf.order == 2])))  # Shelf 2
-curve(expr = predict(object = model_cereal_shelves_linear, newdata = data.frame(sugar = x, fat = fat, sodium = sodium), type = "probs")[,1],
+  xlim = c(min(cereal2$sugar[cereal2$Shelf.order == 2]),
+           max(cereal2$sugar[cereal2$Shelf.order == 2])))  # Shelf 2
+curve(expr = predict(object = model_cereal_shelves_linear,
+  newdata = data.frame(sugar=x, fat=fat, sodium=sodium), type = "probs")[,1],
   col = "black", lty = "solid", lwd = 2, n = 1000, add = TRUE,
-  xlim = c(min(cereal2$sugar[cereal2$Shelf.order == 1]), max(cereal2$sugar[cereal2$Shelf.order == 1])))  # Shelf 1
-legend(x = 0.85, y = 0.18, legend=c(1, 2, 3, 4), lty=c("solid", "longdash", "dotdash", "dotted"),
-  col=c("black", "red", "green", "blue"), bty="n", lwd = c(2,2,2,2), seg.len = 4)
+  xlim = c(min(cereal2$sugar[cereal2$Shelf.order == 1]),
+           max(cereal2$sugar[cereal2$Shelf.order == 1])))  # Shelf 1
+legend(x = 0.85, y = 0.18, legend=c(1, 2, 3, 4),
+       lty=c("solid", "longdash", "dotdash", "dotted"),
+       col=c("black", "red", "green", "blue"),
+       bty="n", lwd = c(2,2,2,2), seg.len = 4)
 
 #shelf_vs_sugar_plot <- 'fill this in'
 ```
