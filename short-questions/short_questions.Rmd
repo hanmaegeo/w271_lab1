@@ -75,7 +75,6 @@ legend(x = 2.6, y = 1.05, legend = c("1", "2", "3", "4"),
        lty = c("solid", "longdash", "dotdash", "dotted"),
   col=c("black", "red", "green", "blue"), cex=0.8, bty="n")
 ```
-
 > 'Fill in: What do you observe in these parallel coordinates plots?'  
 >
 > Fill in: Do content differences exist between the shelves?'
@@ -86,56 +85,135 @@ legend(x = 2.6, y = 1.05, legend = c("1", "2", "3", "4"),
 > 'Shelf 1 tend to have low fat and high sodium. Shelf 2 tend to have high sugar, high-to-medium fat and medium sodium. Shelf 3 tend to have all types of cereals. Sheld 4 tend to have medium sugar, low-to-medium fat and medium sodium cereals.'
 > 
 
-
 ## Evaluate Ordinal vs. Categorical 
 (1 point) The response has values of $1, 2, 3,$ and $4$. Explain under what setting would it be desirable to take into account ordinality, and whether you think that this setting occurs here. Then estimate a suitable multinomial regression model with linear forms of the sugar, fat, and sodium variables. Perform LRTs to examine the importance of each explanatory variable. Show that there are no significant interactions among the explanatory variables (including an interaction among all three variables).
 
 > Fill in: What do you think about ordinal data?'  
 >
-> ''
+> 'TODO: Re-write it as it is mostly copy-paste'. 
+>
+> 'Suppose response variables have a natural ordering to their levels and can be arranged so that category 1 < category 2 < ... < category J in some conceptual scale of measurement, then we can account for this ordinality of response variables in our regression models. In this problem, the shelf number has a natural ordering, which can be arranged as 1 < 2 < 3 < 4. As a result, we can take into account the sheld ordinality.'
 
 ```{r multinomial logit regressions}
-model_cereal_shelves_linear    <- 'fill this in'
-model_cereal_shelves_quadratic <- 'fill this in'
+cereal2$Shelf.order <- factor(cereal2$Shelf, levels = c(1, 2, 3, 4))
+model_cereal_shelves_linear    <- polr(formula = Shelf.order ~ sugar + fat + sodium,
+                                       data = cereal2, method = "logistic")
+summary(model_cereal_shelves_linear)
+model_cereal_shelves_quadratic <- polr(formula = Shelf.order ~ sugar + fat + sodium
+                                       + sugar:fat + sugar:sodium + fat:sodium 
+                                       + sugar:fat:sodium,
+                                       data = cereal2, method = "logistic")
+summary(model_cereal_shelves_quadratic)
 ```
 
 ```{r likelihood ratio tests: main effects}
-lrt_cereal_main_effects <- 'fill this in'
+library(package = car)
+lrt_cereal_main_effects <- Anova(model_cereal_shelves_linear)
+lrt_cereal_main_effects
 ```
 
 ```{r likelihood ratio tests: interaction effects} 
-lrt_cereal_quadratic_effects <- 'fill this in'
+lrt_cereal_quadratic_effects <- Anova(model_cereal_shelves_quadratic)
+lrt_cereal_quadratic_effects
 ```
 
 > 'Fill in: Write about what you learn as a result of these tests, using inline code evaluation.'
+>
+> 'Because of the large test statistic values for sodium, there is sufficient evidence that it is important explanatory variables given that `sugar` and `fat` are in the model.'
+>
+> 'As the amount of sugar or fat or sodium increases, their probability of being on the higher shelf number increases.'
 
 ## Where do you think Apple Jacks will be placed? 
 (1 point) Kellogg’s Apple Jacks (http://www.applejacks.com) is a cereal marketed toward children. For a serving size of $28$ grams, its sugar content is $12$ grams, fat content is $0.5$ grams, and sodium content is $130$ milligrams. Estimate the shelf probabilities for Apple Jacks.
 
 ```{r predictions for apple jacks}
-aj_shelf_probs <- 'fill this in'
+size   <- 28
+sugar  <- 12/size
+fat    <- 0.5/size
+sodium <- 130/size
+
+# Re-scaling each variable to be within 0 and 1
+sugar_all  <- cereal$sugar_g/cereal$size_g
+sugar      <- (sugar - min(sugar_all)) / (max(sugar_all) - min(sugar_all))
+fat_all    <- cereal$fat_g/cereal$size_g
+fat        <- (fat - min(fat_all)) / (max(fat_all) - min(fat_all))
+sodium_all <- cereal$sodium_mg/cereal$size_g
+sodium     <- (sodium - min(sodium_all)) / (max(sodium_all) - min(sodium_all))
+
+predict.data <- data.frame(sugar  = sugar,
+                           fat    = fat,
+                           sodium = sodium)
+
+aj_shelf_probs <- predict(object = model_cereal_shelves_linear,
+                          newdata = predict.data, type = "probs")
+aj_shelf_probs
 ```
 
 > 'Fill this in: Where does your model predict apple jacks will be placed?'
+>
+> 'Shelf 2 has the largest estimated probability for apple jacks cereal placement.'
 
 ## Figure 3.3 
 (1 point) Construct a plot similar to Figure 3.3 where the estimated probability for a shelf is on the *y-axis* and the sugar content is on the *x-axis*. Use the mean overall fat and sodium content as the corresponding variable values in the model. Interpret the plot with respect to sugar content.
 
 ```{r create figure 3.3}
-shelf_vs_sugar_plot <- 'fill this in'
+# Get the mean and re-scale each variable to be within 0 and 1
+fat    <- (mean(fat_all) - min(fat_all)) / (max(fat_all) - min(fat_all))
+sodium <- (mean(sodium_all) - min(sodium_all)) / (max(sodium_all) - min(sodium_all))
+
+# Plotting sugar only model
+curve(expr = predict(object = model_cereal_shelves_linear, newdata = data.frame(sugar = x, fat = fat, sodium = sodium), type = "probs")[,1],
+   ylab = expression(hat(pi)), xlab = "Sugar", type = "n",
+  xlim = c(min(cereal2$sugar), max(cereal2$sugar)), col = "black", lty = "solid", lwd = 2, n = 1000,
+  panel.first = grid(col = "gray", lty = "dotted"))
+curve(expr = predict(object = model_cereal_shelves_linear, newdata = data.frame(sugar = x, fat = fat, sodium = sodium), type = "probs")[,4],
+  col = "blue", lty = "dotted", lwd = 2, n = 1000, add = TRUE,
+  xlim = c(min(cereal2$sugar[cereal2$Shelf.order == 4]), max(cereal2$sugar[cereal2$Shelf.order == 4])))  # Shelf 4
+curve(expr = predict(object = model_cereal_shelves_linear, newdata = data.frame(sugar = x, fat = fat, sodium = sodium), type = "probs")[,3],
+  col = "green", lty = "dotdash", lwd = 2, n = 1000, add = TRUE,
+  xlim = c(min(cereal2$sugar[cereal2$Shelf.order == 3]), max(cereal2$sugar[cereal2$Shelf.order == 3])))  # Shelf 3
+curve(expr = predict(object = model_cereal_shelves_linear, newdata = data.frame(sugar = x, fat = fat, sodium = sodium), type = "probs")[,2],
+  col = "red", lty = "longdash", lwd = 2, n = 1000, add = TRUE,
+  xlim = c(min(cereal2$sugar[cereal2$Shelf.order == 2]), max(cereal2$sugar[cereal2$Shelf.order == 2])))  # Shelf 2
+curve(expr = predict(object = model_cereal_shelves_linear, newdata = data.frame(sugar = x, fat = fat, sodium = sodium), type = "probs")[,1],
+  col = "black", lty = "solid", lwd = 2, n = 1000, add = TRUE,
+  xlim = c(min(cereal2$sugar[cereal2$Shelf.order == 1]), max(cereal2$sugar[cereal2$Shelf.order == 1])))  # Shelf 1
+legend(x = 0.85, y = 0.18, legend=c(1, 2, 3, 4), lty=c("solid", "longdash", "dotdash", "dotted"),
+  col=c("black", "red", "green", "blue"), bty="n", lwd = c(2,2,2,2), seg.len = 4)
+
+#shelf_vs_sugar_plot <- 'fill this in'
 ```
 
 > 'Fill this in: What message does your plot give?'
+>
+> 'The estimated shelf 2 probability is the largest for the high sugar content cereals. The estimated shelf 3 probability is the largest for the low sugar content cereals. The estimated shelf 1 probability is the largest for the high sugar content cereals and vice verse for shelf 4 with highly varying probability compared to sheld 2 & 3.'
 
 ## Odds ratios 
 (1 point) Estimate odds ratios and calculate corresponding confidence intervals for each explanatory variable. Relate your interpretations back to the plots constructed for this exercise. 
 
 ```{r produce odds ratios}
-odds_ratios <- 'fill this in'
+sd.cereal   <- apply(X = cereal2[,2:4], MARGIN = 2, FUN = sd)
+print("Standard deviation")
+sd.cereal
+
+print("Odds ratio confidence interval")
+round(exp(sd.cereal * (-model_cereal_shelves_linear$coefficients)), 2)
+
+print("Odds ratio")
+conf.beta   <- confint(object = model_cereal_shelves_linear, level = 0.95)
+odds_ratios <- round(exp(sd.cereal * (-conf.beta)), 2)
+odds_ratios <- round (data.frame (low = odds_ratios[,2] , up = odds_ratios[ ,1]) , 2)
+odds_ratios
+odds_ratios["sugar", "up"]
 ```
 
 > 'Fill this in: What do you learn about each of these variables?' 
-
+>
+> 'The estimated odds of shelf number being below a particular level change by `r odds_ratios['sugar', 'low']` to `r odds_ratios['sugar', 'up']` times for a `r round(sd.cereal['sugar'], 2)` increase in the sugar level, holding the other variables constant.'  
+> 'The estimated odds of shelf number being below a particular level change by `r odds_ratios['fat', 'low']` to `r odds_ratios['fat', 'up']` times for a `r round(sd.cereal['fat'], 2)` increase in the fat level, holding the other variables constant.'  
+> 'The estimated odds of shelf number being below a particular level change by `r odds_ratios['sodium', 'low']` to `r odds_ratios['sodium', 'up']` times for a `r round(sd.cereal['sodium'], 2)` increase in the sodium level, holding the other variables constant.'  
+>
+> 'As seen on the box plot, the median of sodium decreases as the shelf number increases, and the parallel coordinates show that high sodium cereals generally concentrate on the lower shelf. This relationship is reflected with an above 1 confidence interval, which shows us that the more likely the shelf number to be lower as the larger the sodium content is. On the other hand, sugar and fat content does not show a clear ordinal relationship with a shelf number, which might be why 1 odds-ratio is between the given confidence interval.'  
 
 # Alcohol, self-esteem and negative relationship interactions (5 points)
 
