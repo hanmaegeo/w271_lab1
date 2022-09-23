@@ -10,27 +10,24 @@ fontsize: 11pt
 ---
 
 ```{r load packages for homework 2, message=FALSE}
-#install.packages("GGally")
-#install.packages("hrbrthemes")
-#install.packages("ggthemes")
+list.of.packages <- c("tidyverse", "patchwork", "GGally", "viridis", "hrbrthemes", "gridExtra", "ggthemes", "nnet", "MASS", "car")
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+if(length(new.packages)) install.packages(new.packages)
 library(tidyverse)
 library(patchwork)
 library(GGally)
 library(viridis)
 library(hrbrthemes)
-library(gridExtra)
+library(gridExtra) 
 library(ggthemes)
 
 ## for multinomial log-linear models.
-if(!"nnet"%in%rownames(installed.packages())) {install.packages("nnet")}
 library(nnet)
 
 ## To use plor()
-if(!"MASS"%in%rownames(installed.packages())) {install.packages("MASS")}
 library(MASS)
 
 ## provide useful functions to facilitate the application and interpretation of regression analysis.
-if(!"car"%in%rownames(installed.packages())) {install.packages("car")}
 library(car)
 ```
 
@@ -41,7 +38,7 @@ These questions are taken from Question 12 of chapter 3 of the textbook(Bilder a
 > *In order to maximize sales, items within grocery stores are strategically placed to draw customer attention. This exercise examines one type of item—breakfast cereal. Typically, in large grocery stores, boxes of cereal are placed on sets of shelves located on one side of the aisle. By placing particular boxes of cereals on specific shelves, grocery stores may better attract customers to them. To investigate this further, a random sample of size 10 was taken from each of four shelves at a Dillons grocery store in Manhattan, KS. These data are given in the *cereal_dillons.csv *file. The response variable is the shelf number, which is numbered from bottom (1) to top (4), and the explanatory variables are the sugar, fat, and sodium content of the cereals.*
 
 ```{r read cereal data, message=FALSE}
-cereal <- read_csv('./cereal_dillons.csv')
+cereal <- read_csv('../data/short-questions/cereal_dillons.csv')
 ```
 
 
@@ -209,10 +206,10 @@ model.pred[4]
 
 The probability of Apple Jacks being placed on each shelf is: 
 
-* Shelf 1: 5 percent
+* Shelf 1: `r model.pred[1]`\%
 * Shelf 2: 47 percent
 * Shelf 3: 20 percent
-* Shelf 4: 27 percent
+* Shelf 4: 27 percent 
 
 Therefore, Apple Jacks has the highest probability of being placed on shelf 2, followed by shelf 4, shelf 3 and shelf 1.  
 

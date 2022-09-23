@@ -99,7 +99,7 @@ ggplot(df, aes(x = O.ring, y = Pressure, group = O.ring)) +
 
 ```{r}
 model_1 <- glm(formula = O.ring / 6 ~ Temp + Pressure, data = df,
-               family = 'binomial')
+               family = 'binomial', weights = Number)
 
 Anova(model_1, test = 'LR')
 ```
@@ -124,15 +124,16 @@ Specific requirements for these plots:
 
 ```{r}
 # 1. Estimate the logistic regression model.
-model_2 <- glm(formula = O.ring ~ Temp, data = df, family = poisson(link = 'log'))
+model_2 <- glm(formula = O.ring / 6 ~ Temp, data = df, family = 'binomial',
+               weights = Number)
 summary(model_2)
 ```
 
 ```{r}
 # 2. Determine if a quadratic term is needed in the model for the temperature in
 #    this model.
-model_3 <- glm(formula = O.ring ~ Temp + I(Temp ^ 2), data = df,
-               family = poisson(link = 'log'))
+model_3 <- glm(formula = O.ring / 6 ~ Temp + I(Temp ^ 2), data = df,
+               family = 'binomial', weights = Number)
 
 Anova(model_3)
 ```
@@ -143,7 +144,7 @@ res <- data.frame(Temp = 31:81)
 res['pi_hat'] <- predict(model_3, res, type="response")
 
 ggplot(res, aes(x = Temp, y = pi_hat)) + 
-  geom_line() + 
+  geom_line() +
   labs(title = "Predicted Probability of O-Ring Failure vs Temperature") +
   ylab("Pi") +
   xlab("Temperature")
