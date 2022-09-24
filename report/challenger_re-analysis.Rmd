@@ -141,10 +141,14 @@ Anova(model_3)
 ```{r}
 # Pi vs Temp plot.
 res <- data.frame(Temp = 31:81)
-res['pi_hat'] <- predict(model_3, res, type="response")
+pred_prob <- predict(model_3, res, type="response", se = TRUE)
+res['pi_hat'] <- pred$fit
+res['lower'] <- pred_prob$fit - qnorm(1 - 0.05 / 2) * pred_prob$se.fit
+res['upper'] <- pred_prob$fit + qnorm(1 - 0.05 / 2) * pred_prob$se.fit
 
 ggplot(res, aes(x = Temp, y = pi_hat)) + 
   geom_line() +
+  geom_ribbon(aes(ymin = lower, ymax = upper), alpha = 0.2) + 
   labs(title = "Predicted Probability of O-Ring Failure vs Temperature") +
   ylab("Pi") +
   xlab("Temperature")
@@ -152,10 +156,14 @@ ggplot(res, aes(x = Temp, y = pi_hat)) +
 
 ```{r}
 # Expected number of failures vs Temp plot.
-res['pred_failures'] <- predict(model_3, res)
-?predict
+pred <- predict(model_3, res, se = TRUE)
+res['pred_failures'] <- pred$fit
+res['failures_lower'] <- pred$fit - qnorm(1 - 0.05 / 2) * pred$se.fit
+res['failures_upper'] <- pred$fit + qnorm(1 - 0.05 / 2) * pred$se.fit
+
 ggplot(res, aes(x = Temp, y = pred_failures)) + 
   geom_line() + 
+  geom_ribbon(aes(ymin = failures_lower, ymax = failures_upper), alpha = 0.2) + 
   labs(title = "Predicted Number of O-Ring Failure vs Temperature") +
   ylab("O-Ring Failures") +
   xlab("Temperature")
