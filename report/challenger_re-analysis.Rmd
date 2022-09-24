@@ -178,6 +178,64 @@ Using the parametric bootstrap, compute 90% confidence intervals separately at e
 
 In this section, you should describe your process, justify such a process, and present your results in a way that is compelling for your reader.
 
+```{r bootstrap-confidence-intervals}
+incidents.estimator <- function(b, seed=42, number=6) {
+  # Setting seed to make the plot exactly reproduced
+  set.seed(seed)
+  n <- 23 # Resampled size
+  estimation <- array(data = NA, dim=c(91, b))
+  
+  # Performing re-sampling repeatedly "b" times
+  for(i in 1:b) {
+    samples <- sample(x = 1:n, size = n, replace = TRUE)
+    model   <- glm(formula = O.ring / Number ~ Temp, data = df[samples,],
+                   weights = Number, family = 'binomial')
+    # Performing prediction for 10-100° Fahrenheit using each fitted model 
+    for(t in 10:100) {
+      p <- predict(object = model, newdata = data.frame(Temp = t),
+                   type = "response")
+      estimation[t-9, i] <- p
+    }
+  }
+
+  # Fitting a model with the original data for prediction
+  model <- glm(formula = O.ring/6 ~ Temp, data = df,
+               weights = Number, family = 'binomial')
+  # Estimating Expected number of incidents along with 90% CI
+  incidents <- data.frame(Temperature = integer(),
+                          Incidents = double(),
+                          CI.Upper = double(),
+                          CI.Lower = double())
+  for(t in 10:100) {
+    i <- t-9 # Index to locate data in the data.frame
+    p <- predict(object = model, newdata = data.frame(Temp = t),
+                 type = "response")
+    # Getting the 90% CI and multiply by 6 to get estimation for a single flight
+    ci <- quantile(estimation[i,], probs = c(0.05, 0.95), names=FALSE)
+    incidents[i, 1] <- t
+    incidents[i, 2] <- p*number
+    incidents[i, 3] <- ci[1]*number
+    incidents[i, 4] <- ci[2]*number
+  }
+
+  incidents
+}
+
+# Performing predictions for 10°-100° temperature and plotting the result
+predicted.incidents <- incidents.estimator(1000)
+
+ggplot(predicted.incidents, aes(x=Temperature)) + 
+  geom_line(aes(y = Incidents)) + 
+  geom_line(aes(y = CI.Upper), color = "gray", linetype="dashed", size = 1) + 
+  geom_line(aes(y = CI.Lower), color = "gray", linetype="dashed", size = 1) +
+  scale_y_continuous(breaks = seq(0, 6, by = 1)) +
+  scale_x_continuous(breaks = seq(10, 100, by = 20)) +
+  labs(title = "Expected number of incidents by temperature") +
+  xlab("Temperature in degree fahrenheit") +
+  ylab("Expected number of incidents") +
+  theme_linedraw()
+```
+
 ## Alternative Specification (10 points)
 
 With the same set of explanatory variables in your final model, estimate a linear regression model. Explain the model results; conduct model diagnostic; and assess the validity of the model assumptions. Would you use the linear regression model or binary logistic regression in this case? Explain why.
