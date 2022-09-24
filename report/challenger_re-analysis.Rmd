@@ -2,10 +2,17 @@
 title: "W271 Group Lab 1"
 subtitle: "Investigating the 1986 Space Shuttle Challenger Accident"
 author: "Nathan Martinez, Meera Sharma, Hannah George, and Haile Bizunehe"
-output: bookdown::pdf_document2
 fontsize: 11pt
 geometry: margin=1in
+documentclass: exam
+classoption: answers
+output: 
+  pdf_document: 
+    toc: true
+    number_sections: true
 ---
+
+\newpage
 
 ```{r load packages, message=FALSE, warning=FALSE, echo=FALSE}
 list.of.packages <- c("tidyverse", "sandwich", "lmtest", "car", "MASS", "nnet")
@@ -30,6 +37,10 @@ This report will, indeed, be abstract. No, instead, describe your goals your app
 # Introduction
 
 ## Research question
+
+\begin{solution} \\
+INSERT WRITUP HERE.
+\end{solution}
 
 # Data (20 points)
 
@@ -76,7 +87,11 @@ ggplot(df, aes(x = O.ring, y = Pressure, group = O.ring)) +
   ylab("Pressure") +
   xlab("Number of O-Ring Failures")
 ```
+\begin{solution} \\
+Based on the scatter plots above, we can see there is a negative relationship between temperature and the number of O-ring failures, that is, as temperature increases the number of O-ring failures appears to decrease. This intuition is confirmed when we look at the box plot, with both the mean and quantiles for temperature decreasing as number of O-ring failures increases.
 
+However, there does not appear to be much of a relationship at all when we look at pressure. The scatter plot appears randomly distributed and the box plot is non descriptive at best.
+\end{solution}
 
 ## Description
 
@@ -85,9 +100,15 @@ ggplot(df, aes(x = O.ring, y = Pressure, group = O.ring)) +
 -   Describe the data that you are using. How is this data generated, what is the sampling process that brought it to your availability. If it is helpful, you might describe the population (i.e. the Random Variables) that exist and how samples are produced from these random variables.
 -   The authors use logistic regression to estimate the probability an O-ring will fail. In order to use this model, the authors needed to assume that each O-ring is independent for each launch. Discuss why this assumption is necessary and the potential problems with it. Note that a subsequent analysis helped to alleviate the authors' concerns about independence.
 
+\begin{solution} \\
+INSERT WRITEUP HERE.
+\end{solution}
+
 ## Key Features
 
-(AKA EDA)
+\begin{solution} \\
+INSERT WRITUP HERE.
+\end{solution}
 
 # Analysis
 
@@ -103,9 +124,15 @@ model_1 <- glm(formula = O.ring / 6 ~ Temp + Pressure, data = df,
 
 Anova(model_1, test = 'LR')
 ```
-
+\begin{solution} \\
+Based on the results of the likelihood ratio test, and the EDA performed above, the pressure variable does not appear to have either a statistically significant or practically significant effect on the number of O-ring failures. However, temperature does appear to be significant and should be used in whichever model we create.
+\end{solution}
 
 2.  Dalal, Fowlkes, and Hoadley (1989) chose to remove `pressure` from the model based on their likelihood ratio tests. Critically evaluate, using your test results and understanding of the question and data, whether `pressure` should be included in the model, or instead, `pressure` should not be included in the model. Your report needs to make a determination, argue why it is most appropriate choice, and make note of how (if at all) the model results are affected by the choice of including or excluding `pressure`.
+
+\begin{solution} \\
+Based on the results of the likelihood ratio test above, we would also conclude that the pressure variable should not be included in the model. The effect of the variable is not statistically significant, and the scatter plot of pressure versus number of O-ring failures shows no correlation between the two.
+\end{solution}
 
 ## Confidence Intervals (20 points)
 
@@ -142,7 +169,7 @@ Anova(model_3)
 # Pi vs Temp plot.
 res <- data.frame(Temp = 31:81)
 pred_prob <- predict(model_3, res, type="response", se = TRUE)
-res['pi_hat'] <- pred$fit
+res['pi_hat'] <- pred_prob$fit
 res['lower'] <- pred_prob$fit - qnorm(1 - 0.05 / 2) * pred_prob$se.fit
 res['upper'] <- pred_prob$fit + qnorm(1 - 0.05 / 2) * pred_prob$se.fit
 
@@ -168,9 +195,16 @@ ggplot(res, aes(x = Temp, y = pred_failures)) +
   ylab("O-Ring Failures") +
   xlab("Temperature")
 ```
+\begin{solution} \\
+After looking at the likelihood ratio tests for a quadratic term, we would conclude that it is not necessary to include in the model.
+\end{solution}
 
 
 3.  The temperature was 31° at launch for the Challenger in 1986. Estimate the probability of an O-ring failure using this temperature, and compute a corresponding confidence interval. Discuss what assumptions need to be made in order to apply the inference procedures.
+
+\begin{solution} \\
+When the temperature is 31°, the estimated probability of O-ring failure is `r round(res[res$Temp == 31,]['pi_hat'], 4)` (`r round(res[res$Temp == 31,]['lower'], 4)`, `r round(res[res$Temp == 31,]['upper'], 4)`).
+\end{solution}
 
 ## Bootstrap Confidence Intervals (30 points)
 
@@ -248,6 +282,14 @@ ggplot(predicted.incidents, aes(x=Temperature)) +
 
 With the same set of explanatory variables in your final model, estimate a linear regression model. Explain the model results; conduct model diagnostic; and assess the validity of the model assumptions. Would you use the linear regression model or binary logistic regression in this case? Explain why.
 
+\begin{solution} \\
+INSERT WRITEUP HERE.
+\end{solution}
+
 # Conclusions (10 points)
 
 Interpret the main result of your preferred model in terms of both odds and probability of failure. Summarize this result with respect to the question(s) being asked and key takeaways from the analysis.
+
+\begin{solution} \\
+INSERT WRITEUP HERE.
+\end{solution}
