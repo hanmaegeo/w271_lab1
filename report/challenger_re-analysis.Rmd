@@ -25,7 +25,6 @@ library(lmtest)
 library(car)
 library(MASS)
 library(nnet)
-library(gridExtra)
 ```
 
 \newpage
@@ -60,114 +59,34 @@ df <- read_csv('../data/raw/challenger.csv')
 ```{r}
 summary(df)
 ```
-```{r, echo=FALSE}
-options(repr.plot.width = 1, repr.plot.height =1)
-
-p1 <- ggplot(df, aes(x = Temp, y = factor(O.ring)), fig(1, 1)) + 
+```{r}
+ggplot(df, aes(x = Temp, y = O.ring)) + 
   geom_point() + 
-  labs(title = "O-Ring Failures by Temperature") +
+  labs(title = "Number of O-Ring Failures by Temperature") +
   ylab("Number of O-Ring Failures") +
   xlab("Temperature")
-
-p2 <- ggplot(df, aes(x = Pressure, y = factor(O.ring)), fig(1, 1)) + 
+```
+```{r}
+ggplot(df, aes(x = Pressure, y = O.ring)) + 
   geom_point() + 
-  labs(title = "O-Ring Failures by Pressure") +
+  labs(title = "Number of O-Ring Failures by Pressure") +
   ylab("Number of O-Ring Failures") +
   xlab("Pressure")
-
-grid.arrange(p1, p2, nrow = 1, ncol = 2)
 ```
-
-```{r, echo=FALSE}
-# Flattening the data for density plotting purpose
-df2 <- data.frame(Temp = integer(),
-                  Pressure = integer(),
-                  O.ring.failed = integer())
-
-count <- 0
-for(i in 1:nrow(df)) {
-  for(j in 1:6) {
-    count <- count+1
-    df2[count, "Temp"] <- df[i, "Temp"]
-    df2[count, "Pressure"] <- df[i, "Pressure"]
-    if (j <= as.numeric(df[i, "O.ring"])) {
-      df2[count, "O.ring.failed"] <- "Yes"
-      df2[count, "color"] <- "#35C1C4"
-    } else {
-      df2[count, "O.ring.failed"] <- "No"
-      df2[count, "color"] <- "#EB675F"
-    }
-  }
-}
-
-df2$O.ring.failed <- factor(df2$O.ring.failed, levels=c("Yes", "No"))
-p3 <- df2 %>% 
-  ggplot(aes(x = Temp)) +
-  geom_density(aes(y = ..density..,color = O.ring.failed, fill = O.ring.failed),
-               alpha=0.2, trim = TRUE) +
-  ggtitle("Distribution of temperature") + 
-  theme(plot.title = element_text(lineheight=1, face="bold")) +
-  xlab("Temperature") +
-  ylab("O-ring failure")
-
-p4 <- df2 %>% 
-  ggplot(aes(x = Pressure)) +
-  geom_density(aes(y = ..density..,color = O.ring.failed, fill = O.ring.failed),
-               alpha=0.2, trim = TRUE) +
-  ggtitle("Distribution of pressure") + 
-  theme(plot.title = element_text(lineheight=1, face="bold")) +
-  xlab("Pressure") +
-  ylab("O-ring failure")
-
-grid.arrange(p3, p4, nrow = 1, ncol = 2)
-```
-
-```{r, echo=FALSE}
-# Plotting admission ratio
-p5 <- df2 %>%
-  ggplot(aes(x=O.ring.failed, y = ..prop.., group = 1)) + 
-  geom_bar(fill = 'DarkBlue', color = 'black') +
-  geom_text(stat='count', aes(label=round(..prop.., 2)), vjust=-1) + 
-  ggtitle("O-ring failure proportion") + 
-  theme(plot.title = element_text(size=11, lineheight=1, face="bold")) +
-  xlab("O-ring failed") +
-  ylab("Proportion") +
-  ylim(0,1)
-
-# Plotting failure ratios
-p6 <- df %>%
-  ggplot(aes(Temp, Pressure, colour = factor(O.ring))) +
-  geom_point() +
-  ggtitle("Distribution for failed O.ring") + 
-  theme(plot.title = element_text(size=11, lineheight=1, face="bold")) +
-  xlab("Temperature") +
-  ylab("Pressure") +
-  scale_colour_manual(name = 'Failed O.ring', guide = 'legend',
-                      values = c('0' = 'green', '1' = 'blue', '2' = 'red'),
-                      labels = c('0', '1', '2'))
-
-grid.arrange(p5, p6, nrow = 1, ncol = 2, widths = c(1,2))
-```
-```{r, echo=FALSE}
-p7 <- ggplot(df, aes(x = factor(O.ring), y = Temp, group = O.ring)) + 
+```{r}
+ggplot(df, aes(x = O.ring, y = Temp, group = O.ring)) + 
   geom_boxplot() +
-  labs(title = "O-Ring Failures by Temperature") +
-  geom_jitter(width = 0.25) +
+  labs(title = "Boxplot of O-Ring Failures by Temperature") +
   ylab("Temperature") +
   xlab("Number of O-Ring Failures")
-
-p8 <- ggplot(df, aes(x = factor(O.ring), y = Pressure, group = O.ring)) + 
+```
+```{r}
+ggplot(df, aes(x = O.ring, y = Pressure, group = O.ring)) + 
   geom_boxplot() +
-  labs(title = "O-Ring Failures by Pressure") +
-  geom_jitter(width = 0.25) +
+  labs(title = "Boxplot of O-Ring Failures by Pressure") +
   ylab("Pressure") +
   xlab("Number of O-Ring Failures")
-
-grid.arrange(p7, p8, nrow = 1, ncol = 2)
 ```
-
-
-
 \begin{solution} \\
 Based on the scatter plots above, we can see there is a negative relationship between temperature and the number of O-ring failures, that is, as temperature increases the number of O-ring failures appears to decrease. This intuition is confirmed when we look at the box plot, with both the mean and quantiles for temperature decreasing as number of O-ring failures increases.
 
@@ -303,7 +222,7 @@ In this section, you should describe your process, justify such a process, and p
 
 ```{r bootstrap-confidence-intervals}
 incidents.estimator <- function(b, seed=42, number=6) {
-  # To ensure that the simulations can be reproduced exactly
+  # Setting seed to make the plot exactly reproduced
   set.seed(seed)
   n <- 23 # Resampled size
   estimation <- array(data = NA, dim=c(91, b))
