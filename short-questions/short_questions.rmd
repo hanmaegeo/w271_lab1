@@ -1,6 +1,6 @@
 ---
 title: "Lab 1, Short Questions"
-group: "Group 4"
+group: "Hannah G., Meera S., Haile B., Nathan M."
 geometry: margin=1in
 output:
   pdf_document:
@@ -12,7 +12,7 @@ fontsize: 11pt
 \newpage
 
 ```{r load packages for homework 2, message=FALSE, warning=FALSE, echo=FALSE}
-list.of.packages <- c("tidyverse", "patchwork", "GGally", "viridis", "hrbrthemes", "gridExtra", "ggthemes", "nnet", "MASS", "car", "readr", "dplyr", "forcats", "ggplot2")
+list.of.packages <- c("tidyverse", "patchwork", "GGally", "viridis", "hrbrthemes", "gridExtra", "ggthemes", "nnet", "MASS", "car", "readr", "dplyr", "forcats", "ggplot2", "ordinal")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
 
@@ -30,6 +30,7 @@ library(readr)
 library(dplyr)
 library(forcats)
 library(ggplot2)
+library(ordinal)
 ```
 
 # Strategic Placement of Products in Grocery Stores (5 points)
@@ -153,7 +154,17 @@ Shelf 1 has higher levels of sodium, while shelf 2 appears to have higher levels
 
 \hrulefill
 
-The setting under which it would be desirable to take into account ordinality is a situation where 1 represents the lowest physical level of a shelf as well as the lowest preferred level by shoppers. For example, a shelf one would be considered undersirable while a level of 4 would be desirable by all shoppers. Although the dimensions of the shelves matter, it is typically the case the people prefer shelves 2 and 3 because they are easier to access relative to shelves 1 and 4. Under ideal conditions, Dillons would be able to order shelf levels by shopper preference (e.g. level 1 = really not desirable, level 2 = not desirable, level 3 = desirable, level 4 = really desirable).    
+The setting under which it would be desirable to take into account ordinality is a situation where 1 represents the lowest physical level of a shelf as well as the lowest preferred level by shoppers. For example, a shelf one would be considered undersirable while a level of 4 would be desirable by all shoppers. Although the dimensions of the shelves matter, it is typically the case that people prefer shelves 2 and 3 because they are easier to access relative to shelves 1 and 4. Under ideal conditions, Dillons would be able to order shelf levels by shopper preference (e.g. level 1 = really not desirable, level 2 = not desirable, level 3 = desirable, level 4 = really desirable). In addition, our team performed a nominal test to check whether the ordinal logistic regression as constructed is valid or not.  The nominal test results (displayed below) show that there is no reported nominal effects for sugar indicating that the model is invalid
+
+```{r nominal test for ordinal model}
+cereal2.copy <- data.frame(cereal2) # copy dataframe
+cereal2.copy$Shelf.order <- factor(cereal2.copy$Shelf, levels = c(1,2,3,4)) # order data
+# Set up regression and run nominal test
+lrt_cereal_main_effects2 <- ordinal::clm(Shelf.order ~  fat + sodium + sugar, 
+                                         data = cereal2.copy)
+ordinal::nominal_test(lrt_cereal_main_effects2)
+
+```
 
 ```{r multinomial logit regressions}
 # Model with normalized explanatory variables.
