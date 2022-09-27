@@ -33,7 +33,7 @@ library(gridExtra)
 
 ```{=tex}
 \begin{abstract} 
-This study re-analyzes data from the 1986 Challenger accident to replicate an analysis performed by Dalal, Fowlkes and Hoadley (1989) and to use various statistical techniques to test other aspects of the flight data. In our analysis, we found that only the variable temperature had a statistically significant effect on the number of O-ring failures. We further look into the Challenger crash and whether the temperature was likely to be the cause of it. Using various methods, we determined that low temperature results in a higher probability of O-ring failure. However, given the small amount of data we had on low temperatures and O-ring failures, we should be skeptical of the results.
+This study re-analyzes data from the 1986 Challenger accident to replicate an analysis performed by Dalal, Fowlkes and Hoadley (1989) and to use various statistical techniques to test other aspects of the flight data. In our analysis, we found that only the variable temperature had a statistically significant effect on the probability of an O-ring failure. We further look into the Challenger crash and whether the temperature was likely to be the cause of it. Using various methods, we determined that low temperature results in a higher probability of O-ring failure. However, given the small amount of data we had on low temperatures and O-ring failures, we should be skeptical of the results.
 \end{abstract}
 ```
 
