@@ -62,7 +62,7 @@ df <- read_csv('../data/raw/challenger.csv')
 ```{r, warning=FALSE}
 summary(df)
 ```
-
+The summary function gives us a quick overview of the data. From this we can tell that `Flight` appears to be an ID column, taking on values 1 through 23 to identify the particular row of the data. `Number` tells us the number of O-rings on the shuttle, this value is always 6. `O.ring` is the variable that describes the number of O-ring failures for the particular flight. This variable is typically 0 - most flights do not have an O-ring failure - however, for those that do, there tends to only be 1 to 2 failures out of the possible 6 total. The `Temp` variable tells us the temperature at the time of the flight, with a minimum value of 53 and a maximum value of 81. `Pressure` variable tells us the pressure at the time of the flight, with a minimum value of 50 and a maximum value of 200.
 
 ## Description
 
@@ -85,6 +85,7 @@ By taking independent assumptions for all flights, we can treat the number of di
 
 The potential problem with the independence assumption is that if any O-ring is experiencing thermal distress, there is a high chance that other O-rings in the same space shuttle have similar distress. Second, there may be design changes on any of the four-vehicle fleets or how the flight is performed based on previous flight performance. If any of these changes happen, a relation between flights exists, and the previous flight affects the subsequent flight. An existence of dependency between the outcome can lead to substantial bias in estimated standard errors.
 
+\newpage
 
 ## Key Features
 
@@ -134,6 +135,8 @@ Based on the scatter plots above, we can see there is a negative relationship be
 
 However, there does not appear to be much of a relationship at all when we look at pressure. The scatter plot appears randomly distributed and the box plot is non descriptive at best.
 
+\newpage
+
 ```{r, echo=FALSE}
 # Plotting admission ratio
 df.summary <- data.frame(Proportion = c((sum(df$Number)-sum(df$O.ring))/sum(df$Number), sum(df$O.ring)/sum(df$Number)),
@@ -141,25 +144,26 @@ df.summary <- data.frame(Proportion = c((sum(df$Number)-sum(df$O.ring))/sum(df$N
 ggplot(df.summary, mapping=aes(x = Failed, y = Proportion)) + 
   geom_bar(fill = 'DarkBlue', color = 'black', stat = "identity") +
   geom_text(stat='identity', aes(label=round(Proportion, 2)), vjust=-1) + 
-  ggtitle("O-ring failure proportion") + 
-  theme(plot.title = element_text(size=11, lineheight=1, face="bold")) +
-  xlab("O-ring failed") +
+  ggtitle("O-Ring Failure Proportion") + 
+  theme(plot.title = element_text(size = 10), text = element_text(size = 8)) +
+  xlab("O-Ring Failed") +
   ylab("Proportion") +
   ylim(0, 1) -> p5
 
 # Plotting failure ratios
 ggplot(df, aes(Temp, Pressure, colour = factor(O.ring))) +
   geom_jitter(height=1, width=1) +
-  ggtitle("Distribution for failed O.ring") + 
-  theme(plot.title = element_text(size=11, lineheight=1, face="bold")) +
+  ggtitle("Distribution For Failed O-Ring") + 
+  theme(plot.title = element_text(size = 10), text = element_text(size = 8)) +
   xlab("Temperature") +
   ylab("Pressure") +
-  scale_colour_manual(name = 'Failed O.ring', guide = 'legend',
+  scale_colour_manual(name = 'Number of Failed O-Rings', guide = 'legend',
                       values = c('0' = 'green', '1' = 'blue', '2' = 'red'),
                       labels = c('0', '1', '2')) -> p6
 
-grid.arrange(p5, p6, nrow = 1, ncol = 2, widths = c(1,2))
+grid.arrange(p5, p6, nrow = 2, ncol = 2, widths = c(1,2))
 ```
+
 The above figure shows that in general the failure rate of O-ring is very low. In the joint distribution of temperature and pressure marked by the number of thermal distress on the O-Ring. Most of the distress happened at a pressure of 200 and temperatures 63 and below degrees Fahrenheit. The pressure does not give any additional clue on if it has a role in thermal distress as the joint distribution did not expand what we already learned from the previous figures. Note that jitter is used on the scatter plot to show multiple points layered together.
 
 \newpage
@@ -230,7 +234,7 @@ ggplot(res, aes(x = Temp, y = pi_hat)) +
   geom_line() +
   geom_ribbon(aes(ymin = lower, ymax = upper), alpha = 0.2) + 
   labs(title = "Predicted Probability of O-Ring Failure vs Temperature") +
-  theme(plot.title = element_text(size = 10), text = element_text(size = 8)) +
+  theme(plot.title = element_text(size = 8), text = element_text(size = 7)) +
   ylab("Pi") +
   xlab("Temperature") -> p7
 
@@ -243,11 +247,11 @@ ggplot(res, aes(x = Temp, y = pred_failures)) +
   geom_line() + 
   geom_ribbon(aes(ymin = failures_lower, ymax = failures_upper), alpha = 0.2) + 
   labs(title = "Predicted Number of O-Ring Failures vs Temperature") +
-  theme(plot.title = element_text(size = 10), text = element_text(size = 8)) +
+  theme(plot.title = element_text(size = 8), text = element_text(size = 7)) +
   ylab("O-Ring Failures") +
   xlab("Temperature") -> p8
 
-grid.arrange(p7, p8, nrow = 1, ncol = 2)
+grid.arrange(p7, p8, nrow = 2, ncol = 2)
 ```
 
 The confidence intervals get much larger as temperature decreases, this is because the training data did not have too many low-temperature examples. Leading the model to be more uncertain at lower temperatures.
@@ -256,7 +260,7 @@ The confidence intervals get much larger as temperature decreases, this is becau
 
 \hrulefill
 
-When the temperature is 31°, the estimated probability of O-ring failure is `r round(res[res$Temp == 31,]['pi_hat'], 4)` (`r round(res[res$Temp == 31,]['lower'], 4)`, `r round(res[res$Temp == 31,]['upper'], 4)`). This confidence interval is fairly wide, but an O-ring failure does appear to be more likely than not. In order to believe this inference we have to have faith that the model is accurately making predictions for data that it doesn't have any examples of. The data the model trained on doesn't have any examples of a temperature this low so it's just speculating based on the trend from higher-temperature data. This speculation assumes a linear trend, which there just isn't a lot of data to back that assumption. So altogether we would be skeptical of the model's predictions.
+When the temperature is 31°, the estimated probability of O-ring failure is `r round(res[res$Temp == 31,]['pi_hat'], 4)` (`r round(res[res$Temp == 31,]['lower'], 4)`, `r round(res[res$Temp == 31,]['upper'], 4)`) and the estimated number of O-ring failures is `r round(res[res$Temp == 31,]['pred_failures'], 4)` (`r round(res[res$Temp == 31,]['failures_lower'], 4)`, `r round(res[res$Temp == 31,]['failures_upper'], 4)`). This confidence interval is fairly wide, but an O-ring failure does appear to be more likely than not. In order to believe this inference we have to have faith that the model is accurately making predictions for data that it doesn't have any examples of. The data the model trained on doesn't have any examples of a temperature this low so it's just speculating based on the trend from higher-temperature data. This speculation assumes a linear trend, which there just isn't a lot of data to back that assumption. So altogether we would be skeptical of the model's predictions.
 
 $$\\[0.1in]$$
 
@@ -322,7 +326,8 @@ ggplot(predicted.incidents, aes(x=Temperature)) +
   xlab("Temperature in degree fahrenheit") +
   ylab("Expected number of incidents") -> p9
 
-p9
+# Using grid to make the plot smaller to take up less room.
+grid.arrange(p9, nrow = 2, ncol=2)
 ```
 
 ## Alternative Specification (10 points)
