@@ -32,7 +32,7 @@ library(cowplot)
 
 ```{=tex}
 \begin{abstract} 
-This report will, indeed, be abstract. No, instead, describe your goals your approach, and what you learn.
+This study re-analyzes data from the 1986 Challenger accident to replicate an analysis performed by Dalal, Fowlkes and Hoadley (1989) and to use various statistical techniques to test other aspects of the flight data. In our analysis, we found that only the variable temperature had a statistically significant effect on the number of O-ring failures. We further look into the Challenger crash and whether the temperature was likely to be the cause of it. Using various methods, we determined that low temperature results in a higher probability of O-ring failure. However, given the small amount of data we had on low temperatures and O-ring failures, we should be skeptical of the results.
 \end{abstract}
 ```
 
@@ -108,6 +108,8 @@ $$\\[0.1in]$$
 
 ## Description
 
+### Part 1
+
 \hrulefill
 
 The data in this analysis is used from 23 out of 24 space shuttle orbital flights between April 12, 1981, and January 12, 1986, which covers all flights except one before the Space Shuttle Challenger disaster on January 28, 1986.  After each launch, the rocket motors were recovered from the ocean for inspection and potential reuse.  One flight data is missing as the booster sets were lost in the ocean and it was not possible to retrieve the data and inspect it. 
@@ -117,6 +119,8 @@ The data consists of temperature for the joints connecting the Solid Rocket Moto
 Our population is all O-rings used for space shuttle orbital flights before January 28, 1986 that use the improved version of Solid Rocket Motor Casing Joint Design that accommodates larger-sized shuttle rocket motors and has a second O-ring. The whole population is used in this analysis report.  It is important to note that joint temperatures were between 53°F and 81°F for the 23 space shuttle orbital flights, while the temperature on January 28, 1986 was 31°F.   
 
 $$\\[0.1in]$$
+
+### Part 2
 
 \hrulefill
 
@@ -130,9 +134,7 @@ $$\\[0.1in]$$
 
 \hrulefill
 
-Figure TODO shows us that the majority of thermal distress on the O-Ring happened at temperatures 63 and below degrees Fahrenheit. Three thermal distress exceptions happened at 70 and 75 degrees Fahrenheit. Pressure wise, most failures happen at the high pressure with an exception on pressure 50.
-
-For the figure TODO density plot, we first converted the 23 flight records to 138 records which cover one record for each O-ring. The density shows us that most of the failures happen at low temperatures. When it comes to pressure, there is less failure on low pressure, but there is equivalent failure and success on higher pressure.
+The temperature vs number of O-ring failures scatter plot plot shows us that the majority of thermal distress on the O-Ring happened at temperatures 63 and below degrees Fahrenheit. Three thermal distress exceptions happened at 70 and 75 degrees Fahrenheit. Pressure wise, most failures happen at the high pressure with an exception on pressure 50.
 
 Figure TODO shows that in general the failure rate of O-ring is low. In the joint distribution of temperature and pressure marked by the number of thermal distress on the O-Ring. Most of the distress happened at a pressure of 200 and temperatures 63 and below degrees Fahrenheit. The pressure does not give any additional clue on if it has a role in thermal distress as the joint distribution did not expand what we already learned from figure 1.
 
@@ -142,9 +144,11 @@ $$\\[0.1in]$$
 
 ## Reproducing Previous Analysis (10 points)
 
+### Part 1
+
 \hrulefill
 
-Based on the original paper, the model they used appears to be a binomial logistic regression model, however, our outcome variable is outside the allowed range of (0, 1). Consequentially, we will need to divide the outcome variable by 6 in order to ensure it stays within the allowed range.
+To build a binomial logistic regression model, we used aggregated data where O.ring / Number gives us an observed proportion of O-ring failures for each orbital flight and the weights argument to specify the number of O-rings per orbital flight.
 
 ```{r}
 model_1 <- glm(formula = O.ring / Number ~ Temp + Pressure, data = df,
@@ -157,6 +161,8 @@ Based on the results of the likelihood ratio test, and the EDA performed above, 
 
 $$\\[0.1in]$$
 
+### Part 2
+
 \hrulefill
 
 Based on the results of the likelihood ratio test above, we would also conclude that the pressure variable should not be included in the model. The effect of the variable is not statistically significant, and the scatter plot of pressure versus number of O-ring failures shows no correlation between the two.
@@ -164,6 +170,8 @@ Based on the results of the likelihood ratio test above, we would also conclude 
 $$\\[0.1in]$$
 
 ## Confidence Intervals (20 points)
+
+### Part 1
 
 \hrulefill
 
@@ -219,9 +227,12 @@ ggplot(res, aes(x = Temp, y = pred_failures)) +
 
 plot_grid(p5, p6, nrows=2)
 ```
+
 The confidence intervals get much larger as temperature decreases, this is because the training data did not have too many low-temperature examples. Leading the model to be more uncertain at lower temperatures.
 
 $$\\[0.1in]$$
+
+### Part 2
 
 \hrulefill
 
@@ -294,12 +305,14 @@ plot_grid(NULL, p7, NULL, nrows=2, ncols=3)
 
 ## Alternative Specification (10 points)
 
+\hrulefill
+
 ```{r}
 mod.linear <- lm(O.ring ~ Temp, data = df)
 summary(mod.linear)
 ```
 
-> 'The Temperature is statistically significant and negatively related to the number of O-ring failures for a given flight. For every 1-degree Fahrenheit increase, the number of O-ring failures decreases by 0.04754.'
+The Temperature is statistically significant and negatively related to the number of O-ring failures for a given flight. For every 1-degree Fahrenheit increase, the number of O-ring failures decreases by 0.04754.
 
 ```{r, echo=FALSE}
 par(mfrow=c(2,2))
@@ -313,13 +326,14 @@ The first assumption is that the data is generated using the Independent and Ide
 
 The linear regression violated many assumptions, and its prediction can go negative or above 6, which is invalid. As a result, binary logistic regression is better than linear regression.
 
-\hrulefill
+$$\\[0.1in]$$
 
 # Conclusions (10 points)
 
-Interpret the main result of your preferred model in terms of both odds and probability of failure. Summarize this result with respect to the question(s) being asked and key takeaways from the analysis.
-
 \hrulefill
 
-INSERT WRITEUP HERE.
+This study re-analyzes data from the 1986 Challenger accident to replicate an analysis performed by Dalal, Fowlkes and Hoadley (1989) and to use various statistical techniques to test other aspects of the flight data.  We developed several logistic regression models to test the relationship between the dependent variable, number of O-ring failures, and the explanatory variables of temperature, pressure and a squared quadratic term for temperature.  After performing likelihood ratio tests on the various models, we show that temperature is the only variable that is statistically significant. Specifically, we show that a decrease of 1-degree°F is associated with a 0.11 percentage point increase in O-ring failure. Similarly, we show that the odds of 0-ring failure increase by 12% (1.12) for a 1-degree°F decrease in temperature. 
+
+Although the Challenger crash occurred when it was 31°F, the dataset only includes joint temperatures between 53°F and 81°F.  Using our preferred model, and the existing dataset, we show that when temperature decreases to 31°, the estimated probability of O-ring failure increases to 82% with a 95% confidence interval between 16% and 99%.  When using a bootstrapping technique on the 23 flight samples, we show that the number of O-ring failures increases with colder temperatures and the confidence interval of the number of O-ring failures range from a little over 1 to 6 when temperatures decrease to 30°F.  These results make it apparent that flying at colder temperatures is extremely risky but it also shows with the wide confidence interval that we should be skeptical of model predictions at lower temperatures.  
+
 
