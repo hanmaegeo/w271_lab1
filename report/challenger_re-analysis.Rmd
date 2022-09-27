@@ -36,8 +36,6 @@ This report will, indeed, be abstract. No, instead, describe your goals your app
 \end{abstract}
 ```
 
-$$\\[0.1in]$$
-
 # Introduction
 
 ## Research question
@@ -48,22 +46,12 @@ Our research question is:
 
 *How does the expected number of O-ring failures change with varying temperature and pressure?*
 
-
-$$\\[0.1in]$$
-
 # Data (20 points)
 
-**Complete the following task. In your final submission, please remove this question prompt so that your report reads as a report. The Data Section of this report is worth 20 points.**
-
--   Conduct a thorough EDA of the data set.
-
-    -   This should include both graphical and tabular analysis as taught in this course.
-    -   Since the report has a page-limit, you will have to be selective when choosing visuals to illustrate your key points, associated with a concise explanation of the visuals.
-
--   This EDA should begin with an inspection of the given dataset; examination of anomalies, missing values, potential of top and/or bottom code etc.
-
 \hrulefill
-
+```{r setup, include=FALSE} 
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+```
 ```{r, warning=FALSE, message=FALSE, echo=FALSE}
 df <- read_csv('../data/raw/challenger.csv')
 ```
@@ -97,6 +85,7 @@ ggplot(df, aes(x = O.ring, y = Temp, group = O.ring)) +
   geom_boxplot() +
   labs(title = "Boxplot of O-Ring Failures by Temperature") +
   theme(plot.title = element_text(size = 10), text = element_text(size = 8)) +
+  geom_jitter(width = 0.25) +
   ylab("Temperature") +
   xlab("Number of O-Ring Failures") -> p3
 
@@ -104,6 +93,7 @@ ggplot(df, aes(x = O.ring, y = Pressure, group = O.ring)) +
   geom_boxplot() +
   labs(title = "Boxplot of O-Ring Failures by Pressure") +
   theme(plot.title = element_text(size = 10), text = element_text(size = 8)) +
+  geom_jitter(width = 0.25) +
   ylab("Pressure") +
   xlab("Number of O-Ring Failures") -> p4
 
@@ -118,10 +108,6 @@ $$\\[0.1in]$$
 
 ## Description
 
-**Complete the following task. In your final submission, please remove this question prompt so that your report reads as a report.**
-
--   Describe the data that you are using. How is this data generated, what is the sampling process that brought it to your availability. If it is helpful, you might describe the population (i.e. the Random Variables) that exist and how samples are produced from these random variables.
-
 \hrulefill
 
 The data in this analysis is used from 23 out of 24 space shuttle orbital flights between April 12, 1981, and January 12, 1986, which covers all flights except one before the Space Shuttle Challenger disaster on January 28, 1986.  After each launch, the rocket motors were recovered from the ocean for inspection and potential reuse.  One flight data is missing as the booster sets were lost in the ocean and it was not possible to retrieve the data and inspect it. 
@@ -131,8 +117,6 @@ The data consists of temperature for the joints connecting the Solid Rocket Moto
 Our population is all O-rings used for space shuttle orbital flights before January 28, 1986 that use the improved version of Solid Rocket Motor Casing Joint Design that accommodates larger-sized shuttle rocket motors and has a second O-ring. The whole population is used in this analysis report.  It is important to note that joint temperatures were between 53°F and 81°F for the 23 space shuttle orbital flights, while the temperature on January 28, 1986 was 31°F.   
 
 $$\\[0.1in]$$
-
--   The authors use logistic regression to estimate the probability an O-ring will fail. In order to use this model, the authors needed to assume that each O-ring is independent for each launch. Discuss why this assumption is necessary and the potential problems with it. Note that a subsequent analysis helped to alleviate the authors' concerns about independence.
 
 \hrulefill
 
@@ -158,16 +142,12 @@ $$\\[0.1in]$$
 
 ## Reproducing Previous Analysis (10 points)
 
-**Your analysis should address the following two questions. In your final submission, please remove this question prompt so that your report reads as a report.**
-
-1.  Estimate the logistic regression model that the authors present in their report -- include the variables as linear terms in the model. Evaluate, using likelihood ratio tests, the statistical significance of each explanatory variable in the model. Evaluate, using the context and data understanding that you have created in the **Data** section of this report, the practical significance of each explanatory variable in the model.
-
 \hrulefill
 
 Based on the original paper, the model they used appears to be a binomial logistic regression model, however, our outcome variable is outside the allowed range of (0, 1). Consequentially, we will need to divide the outcome variable by 6 in order to ensure it stays within the allowed range.
 
 ```{r}
-model_1 <- glm(formula = O.ring / 6 ~ Temp + Pressure, data = df,
+model_1 <- glm(formula = O.ring / Number ~ Temp + Pressure, data = df,
                family = 'binomial', weights = Number)
 
 Anova(model_1, test = 'LR')
@@ -177,8 +157,6 @@ Based on the results of the likelihood ratio test, and the EDA performed above, 
 
 $$\\[0.1in]$$
 
-2.  Dalal, Fowlkes, and Hoadley (1989) chose to remove `pressure` from the model based on their likelihood ratio tests. Critically evaluate, using your test results and understanding of the question and data, whether `pressure` should be included in the model, or instead, `pressure` should not be included in the model. Your report needs to make a determination, argue why it is most appropriate choice, and make note of how (if at all) the model results are affected by the choice of including or excluding `pressure`.
-
 \hrulefill
 
 Based on the results of the likelihood ratio test above, we would also conclude that the pressure variable should not be included in the model. The effect of the variable is not statistically significant, and the scatter plot of pressure versus number of O-ring failures shows no correlation between the two.
@@ -187,24 +165,11 @@ $$\\[0.1in]$$
 
 ## Confidence Intervals (20 points)
 
-No matter what you determined about using or dropping `pressure`, for this section begin by considering the simplified model $logit(\pi) = \beta_0 + \beta_1 Temp$, where $\pi$ is the probability of an O-ring failure. Complete the following:
-
-1.  Estimate the logistic regression model.
-2.  Determine if a quadratic term is needed in the model for the temperature in this model.
-3.  Construct two plots:
-4.  $\pi$ vs. Temp; and,
-5.  Expected number of failures vs. Temp.
-
-Specific requirements for these plots:
-
--   Use a temperature range of 31° to 81° on the x-axis even though the minimum temperature in the data set was 53°.\
--   Include the 95% Wald confidence interval bands for $\pi$ on the plot. Describe, in your analysis of these plots, why the bands much wider for lower temperatures than for higher temperatures?
-
 \hrulefill
 
 ```{r}
 # 1. Estimate the logistic regression model.
-model_2 <- glm(formula = O.ring / 6 ~ Temp, data = df, family = 'binomial',
+model_2 <- glm(formula = O.ring / Number ~ Temp, data = df, family = 'binomial',
                weights = Number)
 summary(model_2)
 ```
@@ -212,7 +177,7 @@ summary(model_2)
 ```{r}
 # 2. Determine if a quadratic term is needed in the model for the temperature in
 #    this model.
-model_3 <- glm(formula = O.ring / 6 ~ Temp + I(Temp ^ 2), data = df,
+model_3 <- glm(formula = O.ring / Number ~ Temp + I(Temp ^ 2), data = df,
                family = 'binomial', weights = Number)
 
 Anova(model_3)
@@ -258,8 +223,6 @@ The confidence intervals get much larger as temperature decreases, this is becau
 
 $$\\[0.1in]$$
 
-3.  The temperature was 31° at launch for the Challenger in 1986. Estimate the probability of an O-ring failure using this temperature, and compute a corresponding confidence interval. Discuss what assumptions need to be made in order to apply the inference procedures.
-
 \hrulefill
 
 When the temperature is 31°, the estimated probability of O-ring failure is `r round(res[res$Temp == 31,]['pi_hat'], 4)` (`r round(res[res$Temp == 31,]['lower'], 4)`, `r round(res[res$Temp == 31,]['upper'], 4)`). This confidence interval is fairly wide, but an O-ring failure does appear to be more likely than not. In order to believe this inference we have to have faith that the model is accurately making predictions for data that it doesn't have any examples of. The data the model trained on doesn't have any examples of a temperature this low so it's just speculating based on the trend from higher-temperature data. This speculation assumes a linear trend, which there just isn't a lot of data to back that assumption. So altogether we would be skeptical of the model's predictions.
@@ -267,18 +230,6 @@ When the temperature is 31°, the estimated probability of O-ring failure is `r 
 $$\\[0.1in]$$
 
 ## Bootstrap Confidence Intervals (30 points)
-
-Rather than relying on asymptotic properties, consider using a parametric bootstrap, as did Dalal, Fowlkes and Hoadley. To do this:
-
-1.  Simulate a large number of data sets (n = 23 for each) by re-sampling with replacement from the data.
-2.  Estimate a model for each dataset.
-3.  Compute the effect at a specific temperature of interest.
-
-To produce a confidence interval, the authors used the 0.05 and 0.95 observed quantiles from the simulated distribution as their 90% confidence interval limits.
-
-Using the parametric bootstrap, compute 90% confidence intervals separately at each integer temperature between 10° and 100° Fahrenheit.
-
-In this section, you should describe your process, justify such a process, and present your results in a way that is compelling for your reader.
 
 \hrulefill
 
@@ -295,28 +246,28 @@ incidents.estimator <- function(b, seed=42, number=6) {
     model   <- glm(formula = O.ring / Number ~ Temp, data = df[samples,],
                    weights = Number, family = 'binomial')
     # Performing prediction for 10-100° Fahrenheit using each fitted model 
-    for(t in 10:100) {
-      p <- predict(object = model, newdata = data.frame(Temp = t),
-                   type = "response")
-      estimation[t-9, i] <- p
+    preds <- predict(object = model, newdata = data.frame(Temp = 10:100),
+                     type = "response")
+    j <- 0
+    for(p in preds) {
+      j <- j+1 # Index
+      estimation[j, i] <- p
     }
   }
-
   # Fitting a model with the original data for prediction
-  model <- glm(formula = O.ring/6 ~ Temp, data = df,
+  model <- glm(formula = O.ring/Number ~ Temp, data = df,
                weights = Number, family = 'binomial')
   # Estimating Expected number of incidents along with 90% CI
-  incidents <- data.frame(Temperature = integer(),
-                          Incidents = double(),
-                          CI.Upper = double(),
-                          CI.Lower = double())
-  for(t in 10:100) {
-    i <- t-9 # Index to locate data in the data.frame
-    p <- predict(object = model, newdata = data.frame(Temp = t),
-                 type = "response")
+  incidents <- data.frame(Temperature = integer(), Incidents = double(),
+                          CI.Upper = double(), CI.Lower = double())
+  preds <- predict(object = model, newdata = data.frame(Temp = 10:100),
+                   type = "response")
+  i <- 0
+  for(p in preds) {
+    i <- i+1 # Index to locate data in the data.frame
     # Getting the 90% CI and multiply by 6 to get estimation for a single flight
     ci <- quantile(estimation[i,], probs = c(0.05, 0.95), names=FALSE)
-    incidents[i, 1] <- t
+    incidents[i, 1] <- i + 9 # Temperature
     incidents[i, 2] <- p*number
     incidents[i, 3] <- ci[1]*number
     incidents[i, 4] <- ci[2]*number
@@ -324,12 +275,12 @@ incidents.estimator <- function(b, seed=42, number=6) {
 
   incidents
 }
-```
 
-```{r, echo=FALSE, warning=FALSE}
 # Performing predictions for 10°-100° temperature and plotting the result
 predicted.incidents <- incidents.estimator(1000)
+```
 
+```{r, echo=FALSE}
 ggplot(predicted.incidents, aes(x=Temperature)) + 
   geom_line(aes(y = Incidents)) +
   geom_ribbon(aes(ymin = CI.Lower, ymax = CI.Upper), alpha = 0.2) + 
@@ -341,18 +292,28 @@ ggplot(predicted.incidents, aes(x=Temperature)) +
 plot_grid(NULL, p7, NULL, nrows=2, ncols=3)
 ```
 
-
-$$\\[0.1in]$$
-
 ## Alternative Specification (10 points)
 
-With the same set of explanatory variables in your final model, estimate a linear regression model. Explain the model results; conduct model diagnostic; and assess the validity of the model assumptions. Would you use the linear regression model or binary logistic regression in this case? Explain why.
+```{r}
+mod.linear <- lm(O.ring ~ Temp, data = df)
+summary(mod.linear)
+```
+
+> 'The Temperature is statistically significant and negatively related to the number of O-ring failures for a given flight. For every 1-degree Fahrenheit increase, the number of O-ring failures decreases by 0.04754.'
+
+```{r, echo=FALSE}
+par(mfrow=c(2,2))
+plot(mod.linear)
+```
+
+In the residuals vs fitted plot, there is some non-linear relationship that was not explained by the model and left out in the residuals. In the Q-Q plot, the residuals are supposed to follow a straight line to be normally distributed, but it deviates by forming a curve which might be a result of skewed data. In the scale-location plot, which shows us if there is equal variance (homoscedasticity), we see that the residuals are not randomly spread, and because of that, the smooth red line is not horizontal. In the Residual vs Leverage plot, which shows us that if there are influential observations. All the observations are within Cook's distance lines, with one observation 14 on the borderline. We can say that there are no influential cases that can alter the slope coefficient significantly if removed.  
+
+Assessments for linear regression model assumptions:  
+The first assumption is that the data is generated using the Independent and Identically Distributed (IID) sampling process to ensure that the data comes from the same process and that conclusions can be made from a sample to the full population. For this analysis, we used the entire population needed to asses the Challenger disaster on January 28, 1986, and it satisfies the identically distributed requirement. There is a potential for each flight to have a dependency, but there is no evidence that the flight operation and the design is changed based on previous flight performance; as a result, we can assume that they are independent. The second assumption is linearity (Linear Conditional Expectation), which is one of the three conditions we need to meet under CLM to make our OLS regression model produce unbiased estimates. In order to evaluate the linearity, we examined the model's residuals against the Temp explaining variable, and we can see that the linear relationship does not exist and the assumption is not satisfied. The third assumption is no perfect collinearity where there is no exact linear relationship among the independent variables. Our model has only one variable, and this assumption is satisfied. The fourth assumption is zero conditional mean error which is diagnosed using residuals vs fitted values in the above figure to evaluate if the error (residual) of the model is centered on prediction. In the plot, we see a non-linear relationship that needs to be modeled. As a result, the assumption is not satisfied. The fifth assumption is homoskedastic errors where we have constant error variance across the entire range of the x's. Using occular test, we can see that homoskedastic errors assumption is not satisfied. The sixth assumption is normally distributed errors which is not the case as shown on the Q-Q plot.  
+
+The linear regression violated many assumptions, and its prediction can go negative or above 6, which is invalid. As a result, binary logistic regression is better than linear regression.
 
 \hrulefill
-
-INSERT WRITEUP HERE.
-
-$$\\[0.1in]$$
 
 # Conclusions (10 points)
 
