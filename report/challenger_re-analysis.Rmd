@@ -139,7 +139,7 @@ However, there does not appear to be much of a relationship at all when we look 
 
 \newpage
 
-```{r, echo=FALSE, fig.height=3, fig.width=6}
+```{r, echo=FALSE, fig.height=3, fig.width=7}
 # Plotting admission ratio
 df.summary <- data.frame(Proportion = c((sum(df$Number)-sum(df$O.ring))/sum(df$Number), sum(df$O.ring)/sum(df$Number)),
                          Failed = c("No", "Yes"))
@@ -217,7 +217,7 @@ Anova(model_3)
 
 After looking at the likelihood ratio tests for a quadratic term, we would conclude that it is not necessary to include in the model. For the following purposes, we will use model 2.
 
-```{r, echo=FALSE, fig.height=3, fig.width=6}
+```{r, echo=FALSE, fig.height=3, fig.width=7}
 # Pi vs Temp plot.
 res <- data.frame(Temp = 31:81)
 prob_pred <- predict(model_2, res, type="response", se = TRUE)
@@ -308,7 +308,7 @@ incidents.estimator <- function(b, seed=42, number=6) {
 }
 
 # Performing predictions for 10°-100° temperature and plotting the result
-predicted.incidents <- incidents.estimator(3000)
+predicted.incidents <- incidents.estimator(5000)
 ```
 
 ```{r, echo=FALSE, fig.height=3, fig.width=4}
