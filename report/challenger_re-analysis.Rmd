@@ -26,6 +26,7 @@ library(car)
 library(MASS)
 library(nnet)
 library(cowplot)
+library(gridExtra)
 ```
 
 \newpage
@@ -46,6 +47,8 @@ Our research question is:
 
 *How does the expected number of O-ring failures change with varying temperature and pressure?*
 
+$$\\[0.1in]$$
+
 # Data (20 points)
 
 \hrulefill
@@ -59,6 +62,33 @@ df <- read_csv('../data/raw/challenger.csv')
 ```{r, warning=FALSE}
 summary(df)
 ```
+
+
+## Description
+
+### Part 1
+
+\hrulefill
+
+The data in this analysis is used from 23 out of 24 space shuttle orbital flights between April 12, 1981, and January 12, 1986, which covers all flights except one before the Space Shuttle Challenger disaster on January 28, 1986.  After each launch, the rocket motors were recovered from the ocean for inspection and potential reuse.  One flight data is missing as the booster sets were lost in the ocean and it was not possible to retrieve the data and inspect it. 
+
+The data consists of temperature for the joints connecting the Solid Rocket Motor casings, propellant gas pressure, number of distressed thermal O-rings used to seal the joints, and the total number of O-rings. Our dependent variable is the number of distressed thermal O-rings used to seal the joints.
+
+Our population is all O-rings used for space shuttle orbital flights before January 28, 1986 that use the improved version of Solid Rocket Motor Casing Joint Design that accommodates larger-sized shuttle rocket motors and has a second O-ring. The whole population is used in this analysis report.  It is important to note that joint temperatures were between 53°F and 81°F for the 23 space shuttle orbital flights, while the temperature on January 28, 1986 was 31°F.   
+
+
+### Part 2
+
+\hrulefill
+
+By taking independent assumptions for all flights, we can treat the number of distressed thermal O-rings as a binomial random variable and satisfy one of the requirements of a binomial regression that we will use for modeling.
+
+The potential problem with the independence assumption is that if any O-ring is experiencing thermal distress, there is a high chance that other O-rings in the same space shuttle have similar distress. Second, there may be design changes on any of the four-vehicle fleets or how the flight is performed based on previous flight performance. If any of these changes happen, a relation between flights exists, and the previous flight affects the subsequent flight. An existence of dependency between the outcome can lead to substantial bias in estimated standard errors.
+
+
+## Key Features
+
+\hrulefill
 
 ```{r, echo=FALSE, warning=FALSE}
 df %>% 
@@ -104,41 +134,35 @@ Based on the scatter plots above, we can see there is a negative relationship be
 
 However, there does not appear to be much of a relationship at all when we look at pressure. The scatter plot appears randomly distributed and the box plot is non descriptive at best.
 
-$$\\[0.1in]$$
+```{r, echo=FALSE}
+# Plotting admission ratio
+df.summary <- data.frame(Proportion = c((sum(df$Number)-sum(df$O.ring))/sum(df$Number), sum(df$O.ring)/sum(df$Number)),
+                         Failed = c("No", "Yes"))
+ggplot(df.summary, mapping=aes(x = Failed, y = Proportion)) + 
+  geom_bar(fill = 'DarkBlue', color = 'black', stat = "identity") +
+  geom_text(stat='identity', aes(label=round(Proportion, 2)), vjust=-1) + 
+  ggtitle("O-ring failure proportion") + 
+  theme(plot.title = element_text(size=11, lineheight=1, face="bold")) +
+  xlab("O-ring failed") +
+  ylab("Proportion") +
+  ylim(0, 1) -> p5
 
-## Description
+# Plotting failure ratios
+ggplot(df, aes(Temp, Pressure, colour = factor(O.ring))) +
+  geom_jitter(height=1, width=1) +
+  ggtitle("Distribution for failed O.ring") + 
+  theme(plot.title = element_text(size=11, lineheight=1, face="bold")) +
+  xlab("Temperature") +
+  ylab("Pressure") +
+  scale_colour_manual(name = 'Failed O.ring', guide = 'legend',
+                      values = c('0' = 'green', '1' = 'blue', '2' = 'red'),
+                      labels = c('0', '1', '2')) -> p6
 
-### Part 1
+grid.arrange(p5, p6, nrow = 1, ncol = 2, widths = c(1,2))
+```
+The above figure shows that in general the failure rate of O-ring is very low. In the joint distribution of temperature and pressure marked by the number of thermal distress on the O-Ring. Most of the distress happened at a pressure of 200 and temperatures 63 and below degrees Fahrenheit. The pressure does not give any additional clue on if it has a role in thermal distress as the joint distribution did not expand what we already learned from the previous figures. Note that jitter is used on the scatter plot to show multiple points layered together.
 
-\hrulefill
-
-The data in this analysis is used from 23 out of 24 space shuttle orbital flights between April 12, 1981, and January 12, 1986, which covers all flights except one before the Space Shuttle Challenger disaster on January 28, 1986.  After each launch, the rocket motors were recovered from the ocean for inspection and potential reuse.  One flight data is missing as the booster sets were lost in the ocean and it was not possible to retrieve the data and inspect it. 
-
-The data consists of temperature for the joints connecting the Solid Rocket Motor casings, propellant gas pressure, number of distressed thermal O-rings used to seal the joints, and the total number of O-rings. Our dependent variable is the number of distressed thermal O-rings used to seal the joints.
-
-Our population is all O-rings used for space shuttle orbital flights before January 28, 1986 that use the improved version of Solid Rocket Motor Casing Joint Design that accommodates larger-sized shuttle rocket motors and has a second O-ring. The whole population is used in this analysis report.  It is important to note that joint temperatures were between 53°F and 81°F for the 23 space shuttle orbital flights, while the temperature on January 28, 1986 was 31°F.   
-
-$$\\[0.1in]$$
-
-### Part 2
-
-\hrulefill
-
-By taking independent assumptions for all flights, we can treat the number of distressed thermal O-rings as a binomial random variable and satisfy one of the requirements of a binomial regression that we will use for modeling.
-
-The potential problem with the independence assumption is that if any O-ring is experiencing thermal distress, there is a high chance that other O-rings in the same space shuttle have similar distress. Second, there may be design changes on any of the four-vehicle fleets or how the flight is performed based on previous flight performance. If any of these changes happen, a relation between flights exists, and the previous flight affects the subsequent flight. An existence of dependency between the outcome can lead to substantial bias in estimated standard errors.
-
-$$\\[0.1in]$$
-
-## Key Features
-
-\hrulefill
-
-The temperature vs number of O-ring failures scatter plot plot shows us that the majority of thermal distress on the O-Ring happened at temperatures 63 and below degrees Fahrenheit. Three thermal distress exceptions happened at 70 and 75 degrees Fahrenheit. Pressure wise, most failures happen at the high pressure with an exception on pressure 50.
-
-Figure TODO shows that in general the failure rate of O-ring is low. In the joint distribution of temperature and pressure marked by the number of thermal distress on the O-Ring. Most of the distress happened at a pressure of 200 and temperatures 63 and below degrees Fahrenheit. The pressure does not give any additional clue on if it has a role in thermal distress as the joint distribution did not expand what we already learned from figure 1.
-
-$$\\[0.1in]$$
+\newpage
 
 # Analysis
 
@@ -159,15 +183,13 @@ Anova(model_1, test = 'LR')
 
 Based on the results of the likelihood ratio test, and the EDA performed above, the pressure variable does not appear to have either a statistically significant or practically significant effect on the number of O-ring failures. However, temperature does appear to be significant and should be used in whichever model we create.
 
-$$\\[0.1in]$$
-
 ### Part 2
 
 \hrulefill
 
 Based on the results of the likelihood ratio test above, we would also conclude that the pressure variable should not be included in the model. The effect of the variable is not statistically significant, and the scatter plot of pressure versus number of O-ring failures shows no correlation between the two.
 
-$$\\[0.1in]$$
+\newpage
 
 ## Confidence Intervals (20 points)
 
@@ -210,7 +232,7 @@ ggplot(res, aes(x = Temp, y = pi_hat)) +
   labs(title = "Predicted Probability of O-Ring Failure vs Temperature") +
   theme(plot.title = element_text(size = 10), text = element_text(size = 8)) +
   ylab("Pi") +
-  xlab("Temperature") -> p5
+  xlab("Temperature") -> p7
 
 # Expected number of failures vs Temp plot.
 res['pred_failures'] <- res$pi_hat * 6
@@ -223,14 +245,12 @@ ggplot(res, aes(x = Temp, y = pred_failures)) +
   labs(title = "Predicted Number of O-Ring Failures vs Temperature") +
   theme(plot.title = element_text(size = 10), text = element_text(size = 8)) +
   ylab("O-Ring Failures") +
-  xlab("Temperature") -> p6
+  xlab("Temperature") -> p8
 
-plot_grid(p5, p6, nrows=2)
+grid.arrange(p7, p8, nrow = 1, ncol = 2)
 ```
 
 The confidence intervals get much larger as temperature decreases, this is because the training data did not have too many low-temperature examples. Leading the model to be more uncertain at lower temperatures.
-
-$$\\[0.1in]$$
 
 ### Part 2
 
@@ -239,6 +259,8 @@ $$\\[0.1in]$$
 When the temperature is 31°, the estimated probability of O-ring failure is `r round(res[res$Temp == 31,]['pi_hat'], 4)` (`r round(res[res$Temp == 31,]['lower'], 4)`, `r round(res[res$Temp == 31,]['upper'], 4)`). This confidence interval is fairly wide, but an O-ring failure does appear to be more likely than not. In order to believe this inference we have to have faith that the model is accurately making predictions for data that it doesn't have any examples of. The data the model trained on doesn't have any examples of a temperature this low so it's just speculating based on the trend from higher-temperature data. This speculation assumes a linear trend, which there just isn't a lot of data to back that assumption. So altogether we would be skeptical of the model's predictions.
 
 $$\\[0.1in]$$
+
+\newpage
 
 ## Bootstrap Confidence Intervals (30 points)
 
@@ -288,7 +310,7 @@ incidents.estimator <- function(b, seed=42, number=6) {
 }
 
 # Performing predictions for 10°-100° temperature and plotting the result
-predicted.incidents <- incidents.estimator(1000)
+predicted.incidents <- incidents.estimator(3000)
 ```
 
 ```{r, echo=FALSE}
@@ -298,9 +320,9 @@ ggplot(predicted.incidents, aes(x=Temperature)) +
   labs(title = "Expected Number of Incidents by Temperature") +
   theme(plot.title = element_text(size = 10), text = element_text(size = 8)) +
   xlab("Temperature in degree fahrenheit") +
-  ylab("Expected number of incidents") -> p7
+  ylab("Expected number of incidents") -> p9
 
-plot_grid(NULL, p7, NULL, nrows=2, ncols=3)
+p9
 ```
 
 ## Alternative Specification (10 points)
