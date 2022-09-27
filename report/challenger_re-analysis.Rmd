@@ -260,6 +260,8 @@ The confidence intervals get much larger as temperature decreases, this is becau
 
 When the temperature is 31°, the estimated probability of O-ring failure is `r round(res[res$Temp == 31,]['pi_hat'], 4)` (`r round(res[res$Temp == 31,]['lower'], 4)`, `r round(res[res$Temp == 31,]['upper'], 4)`) and the estimated number of O-ring failures is `r round(res[res$Temp == 31,]['pred_failures'], 4)` (`r round(res[res$Temp == 31,]['failures_lower'], 4)`, `r round(res[res$Temp == 31,]['failures_upper'], 4)`). This confidence interval is fairly wide, but an O-ring failure does appear to be more likely than not. In order to believe this inference we have to have faith that the model is accurately making predictions for data that it doesn't have any examples of. The data the model trained on doesn't have any examples of a temperature this low so it's just speculating based on the trend from higher-temperature data. This speculation assumes a linear trend, which there just isn't a lot of data to back that assumption. So altogether we would be skeptical of the model's predictions.
 
+\newpage
+
 ## Bootstrap Confidence Intervals (30 points)
 
 \hrulefill
